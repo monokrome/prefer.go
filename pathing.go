@@ -4,37 +4,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
 var standardPaths []string
-
-func getWindowsPaths() []string {
-	return []string{
-		os.Getenv("USERPROFILE"),
-		os.Getenv("LOCALPROFILE"),
-		os.Getenv("APPDATA"),
-
-		os.Getenv("CommonProgramFiles"),
-
-		os.Getenv("ProgramData"),
-		os.Getenv("ProgramFiles"),
-		os.Getenv("ProgramFiles(x86)"),
-
-		os.Getenv("SystemRoot"),
-		filepath.Join(os.Getenv("SystemRoot"), "system32"),
-	}
-}
-
-func getUnixPaths() []string {
-	return []string{
-		filepath.Join(os.Getenv("HOME"), ".config"),
-		os.Getenv("HOME"),
-		"/usr/local",
-		"/usr",
-		"/",
-	}
-}
 
 func StandardPaths() []string {
 	paths := make([]string, len(standardPaths))
@@ -77,12 +49,7 @@ func init() {
 		paths = append(paths, xdgPaths...)
 	}
 
-	switch runtime.GOOS {
-	case "win32":
-		paths = append(paths, getWindowsPaths()...)
-	default:
-		paths = append(paths, getUnixPaths()...)
-	}
+	paths = append(paths, getSystemPaths()...)
 
 	for _, path := range paths {
 		if path == "/" {
