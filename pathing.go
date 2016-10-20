@@ -1,7 +1,6 @@
 package prefer
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 )
