@@ -3,6 +3,7 @@ package prefer
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"path"
 
 	"gopkg.in/h2non/filetype.v0"
@@ -18,15 +19,19 @@ type Serializer interface {
 func NewSerializer(identifier string, content []byte) (serializer Serializer, err error) {
 	var extension string
 
-	if kind, unknown := filetype.Match(content); err == nil && unknown == nil {
+	if kind, unknown := filetype.Match(content); err == nil && unknown == nil && kind.Extension != "unknown" {
 		extension = kind.Extension
 	} else {
 		extension = path.Ext(identifier)
 	}
 
 	switch extension {
-	default:
+	case ".xml":
+		return XMLSerializer{}, nil
+	case ".json":
 		return JSONSerializer{}, nil
+	default:
+		return nil, errors.New("No matching serializer for " + identifier)
 	}
 }
 

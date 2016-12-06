@@ -1,6 +1,9 @@
 package prefer
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 const (
 	MOCK_NAME  = "Mock Name"
@@ -36,10 +39,21 @@ func getMockSubjectSerialize(t *testing.T, serializer Serializer) []byte {
 
 func TestNewSerializerReturnsJSONSerializer(t *testing.T) {
 	content := getMockSubjectSerialize(t, JSONSerializer{})
-	serializer, _ := NewSerializer("example.json", content)
+	serializer, err := NewSerializer("example.json", content)
+	checkTestError(t, err)
 
-	if _, ok := serializer.(JSONSerializer); ok != true {
-		t.Error("Expected NewSerializer to return a JSONSerializer")
+	if reflect.TypeOf(serializer).Name() != "JSONSerializer" {
+		t.Error("Got Serializer of wrong type when requesting JSONSerializer.")
+	}
+}
+
+func TestNewSerializerReturnsXMLSerializer(t *testing.T) {
+	content := getMockSubjectSerialize(t, XMLSerializer{})
+	serializer, err := NewSerializer("example.xml", content)
+	checkTestError(t, err)
+
+	if reflect.TypeOf(serializer).Name() != "XMLSerializer" {
+		t.Error("Got Serializer of wrong type when requesting XMLSerializer.")
 	}
 }
 
