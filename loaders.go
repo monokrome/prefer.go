@@ -9,10 +9,10 @@ type Loader interface {
 	Load(identifier string) ([]byte, error)
 }
 
-func NewLoader(identifier string) (loader Loader, err error) {
+func NewLoader(identifier string) (Loader, error) {
 	switch identifier {
 	default:
-		return loader, nil
+		return FileLoader{}, nil
 	}
 }
 
@@ -23,8 +23,7 @@ func (loader FileLoader) Load(identifier string) (result []byte, err error) {
 	check(err)
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
+	for scanner := bufio.NewScanner(file); scanner.Scan(); {
 		result = append(result, scanner.Bytes()...)
 	}
 
