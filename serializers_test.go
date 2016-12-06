@@ -12,7 +12,7 @@ type MockSubject struct {
 	Value int
 }
 
-func check(t *testing.T, err error) {
+func checkTest(t *testing.T, err error) {
 	if err != nil {
 		t.Error(err)
 	}
@@ -27,10 +27,10 @@ func TestJSONSerializer(t *testing.T) {
 	}
 
 	serialized, err := serializer.Serialize(subject)
-	check(t, err)
+	checkTest(t, err)
 
 	result := MockSubject{}
-	check(t, serializer.Deserialize(serialized, &result))
+	checkTest(t, serializer.Deserialize(serialized, &result))
 
 	if result != subject {
 		t.Error("Result does not match original serialized object.")
@@ -46,10 +46,10 @@ func TestXMLSerializer(t *testing.T) {
 	}
 
 	serialized, err := serializer.Serialize(subject)
-	check(t, err)
+	checkTest(t, err)
 
 	result := MockSubject{}
-	check(t, serializer.Deserialize(serialized, &result))
+	checkTest(t, serializer.Deserialize(serialized, &result))
 
 	if result != subject {
 		t.Error("Result does not match original serialized object.")

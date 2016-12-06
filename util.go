@@ -2,7 +2,7 @@ package prefer
 
 import "log"
 
-func checkError(err error) {
+func check(err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}

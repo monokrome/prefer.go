@@ -18,7 +18,7 @@ type FileLoader struct{}
 
 func (loader FileLoader) Load(identifier string) (result []byte, err error) {
 	file, err := os.Open(identifier)
-	checkError(err)
+	check(err)
 
 	defer file.Close()
 

@@ -16,15 +16,15 @@ func NewConfiguration(identifier string) *Configuration {
 	return &configuration
 }
 
-func (configuration *Configuration) Load(out interface{}) error {
+func (configuration *Configuration) Reload(out interface{}) error {
 	loader, err := NewLoader(configuration.identifier)
-	checkError(err)
+	check(err)
 
 	serializer, err := NewSerializer(configuration.identifier)
-	checkError(err)
+	check(err)
 
 	content, err := loader.Load(configuration.identifier)
-	checkError(err)
+	check(err)
 
 	err = serializer.Deserialize(content, out)
 	return err
