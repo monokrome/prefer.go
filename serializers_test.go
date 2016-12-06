@@ -12,46 +12,57 @@ type MockSubject struct {
 	Value int
 }
 
-func checkTest(t *testing.T, err error) {
+func checkTestError(t *testing.T, err error) {
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestJSONSerializer(t *testing.T) {
-	serializer := JSONSerializer{}
-
-	subject := MockSubject{
+func getMockSubject() *MockSubject {
+	return &MockSubject{
 		Name:  MOCK_NAME,
 		Value: MOCK_VALUE,
 	}
+}
+
+func getMockSubjectSerialize(t *testing.T, serializer Serializer) []byte {
+	subject := getMockSubject()
 
 	serialized, err := serializer.Serialize(subject)
-	checkTest(t, err)
+	checkTestError(t, err)
 
-	result := MockSubject{}
-	checkTest(t, serializer.Deserialize(serialized, &result))
+	return serialized
+}
 
-	if result != subject {
+func TestNewSerializerReturnsJSONSerializer(t *testing.T) {
+	content := getMockSubjectSerialize(t, JSONSerializer{})
+	serializer, _ := NewSerializer("example.json", content)
+
+	if _, ok := serializer.(JSONSerializer); ok != true {
+		t.Error("Expected NewSerializer to return a JSONSerializer")
+	}
+}
+
+func JSONSerializerTestCase(t *testing.T) {
+	serializer := JSONSerializer{}
+	serialized := getMockSubjectSerialize(t, serializer)
+
+	result := &MockSubject{}
+	checkTestError(t, serializer.Deserialize(serialized, result))
+
+	if result != getMockSubject() {
 		t.Error("Result does not match original serialized object.")
 	}
 }
 
-func TestXMLSerializer(t *testing.T) {
+func XMLSerializerTestCase(t *testing.T) {
 	serializer := XMLSerializer{}
+	serialized := getMockSubjectSerialize(t, serializer)
 
-	subject := MockSubject{
-		Name:  MOCK_NAME,
-		Value: MOCK_VALUE,
-	}
+	result := &MockSubject{}
+	checkTestError(t, serializer.Deserialize(serialized, result))
 
-	serialized, err := serializer.Serialize(subject)
-	checkTest(t, err)
-
-	result := MockSubject{}
-	checkTest(t, serializer.Deserialize(serialized, &result))
-
-	if result != subject {
+	if result != getMockSubject() {
 		t.Error("Result does not match original serialized object.")
 	}
 }

@@ -9,22 +9,26 @@ type Configuration struct {
 }
 
 func NewConfiguration(identifier string) *Configuration {
-	configuration := Configuration{
+	return &Configuration{
 		identifier: identifier,
 	}
-
-	return &configuration
 }
 
-func (configuration *Configuration) Reload(out interface{}) error {
+func (configuration *Configuration) Load(out *interface{}) error {
 	loader, err := NewLoader(configuration.identifier)
-	check(err)
-
-	serializer, err := NewSerializer(configuration.identifier)
-	check(err)
+	if err != nil {
+		return err
+	}
 
 	content, err := loader.Load(configuration.identifier)
-	check(err)
+	if err != nil {
+		return err
+	}
+
+	serializer, err := NewSerializer(configuration.identifier, content)
+	if err != nil {
+		return err
+	}
 
 	err = serializer.Deserialize(content, out)
 	return err

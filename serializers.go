@@ -3,6 +3,9 @@ package prefer
 import (
 	"encoding/json"
 	"encoding/xml"
+	"path"
+
+	"gopkg.in/h2non/filetype.v0"
 )
 
 // NOTE: It may make more sense to use a map to these instead of creating
@@ -12,9 +15,19 @@ type Serializer interface {
 	Deserialize([]byte, interface{}) error
 }
 
-func NewSerializer(identifier string) (serializer Serializer, err error) {
-	// TODO: Automatic discovery of which loader type to use
-	return JSONSerializer{}, err
+func NewSerializer(identifier string, content []byte) (serializer Serializer, err error) {
+	var extension string
+
+	if kind, unknown := filetype.Match(content); err == nil && unknown == nil {
+		extension = kind.Extension
+	} else {
+		extension = path.Ext(identifier)
+	}
+
+	switch extension {
+	default:
+		return JSONSerializer{}, nil
+	}
 }
 
 type JSONSerializer struct{}
