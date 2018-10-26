@@ -15,17 +15,13 @@ type Configuration struct {
 func Load(identifier string, out interface{}) (*Configuration, error) {
 	configuration := &Configuration{identifier: identifier}
 
-	log.Println("Meow")
-
 	loader, err := NewLoader(configuration.identifier)
 	if err != nil {
-		log.Println("2")
 		return nil, err
 	}
 
 	content, err := loader.Load(configuration.identifier)
 	if err != nil {
-		log.Println("3")
 		return nil, err
 	}
 
