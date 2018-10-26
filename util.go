@@ -1,9 +1,7 @@
 package prefer
 
-import "log"
-
-func check(err error) {
+func panicIfError(err error) {
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }

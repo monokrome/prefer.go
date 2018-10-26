@@ -30,7 +30,7 @@ Search:
 
 func init() {
 	wd, err := os.Getwd()
-	check(err)
+	panicIfError(err)
 
 	// Remove /bin if it's at the end of the cwd
 	// TODO: Er, os.PathSeparator is a rune... So, here's a hack.
