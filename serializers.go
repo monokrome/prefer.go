@@ -11,34 +11,39 @@ import (
 	"github.com/go-yaml/yaml"
 )
 
-// NOTE: It may make more sense to use a map to these instead of creating
-// potentially unnecessray structs for implementing interfaces on.
+// Serializers is a mapping of file extensions to their related serializers
+var serializers map[string]Serializer
+
+// Serializer provides an interface for packing and unpacking data
 type Serializer interface {
 	Serialize(interface{}) ([]byte, error)
 	Deserialize([]byte, interface{}) error
 }
 
-func NewSerializer(identifier string, content []byte) (serializer Serializer, err error) {
+// SerializerFor gets a serializer matching the given identifier
+func SerializerFor(identifier string, content []byte) (serializer Serializer, err error) {
 	var extension string
 
-	if kind, unknown := filetype.Match(content); err == nil && unknown == nil && kind.Extension != "unknown" {
-		extension = kind.Extension
+	kind, unknown := filetype.Match(content)
+
+	// Attempt to detect the Formatter when no identifier is provided
+	if unknown == nil && kind.Extension != "unknown" {
+		extension = kind.Extension[1:]
 	} else {
 		extension = path.Ext(identifier)
+
+		if extension != "" {
+			extension = extension[1:]
+		}
 	}
 
-	switch extension {
-	case ".xml":
-		return XMLSerializer{}, nil
-	case ".json":
-		return JSONSerializer{}, nil
-	case ".yaml":
-		return YAMLSerializer{}, nil
-	case ".yml":
-		return YAMLSerializer{}, nil
-	default:
-		return nil, errors.New("No matching serializer for " + identifier)
+	serializer, ok := serializers[extension]
+
+	if ok != true {
+		return nil, errors.New("No Serializer was found for the given file")
 	}
+
+	return serializer, nil
 }
 
 // JSONSerializer serializers to/from JSON format
@@ -78,4 +83,14 @@ func (serializer YAMLSerializer) Serialize(input interface{}) ([]byte, error) {
 // Deserialize receives []byte and fills obj with it's deserialized values
 func (serializer YAMLSerializer) Deserialize(input []byte, obj interface{}) error {
 	return yaml.Unmarshal(input, &obj)
+}
+
+// Set up serializers
+func init() {
+	serializers = make(map[string]Serializer)
+
+	serializers["json"] = JSONSerializer{}
+	serializers["xml"] = XMLSerializer{}
+	serializers["yaml"] = YAMLSerializer{}
+	serializers["yml"] = YAMLSerializer{}
 }
