@@ -10,7 +10,7 @@ import (
 
 // A Loader represents a specific way of loading bytes from a data source
 type Loader interface {
-	Discover(identifier string) string
+	Discover(identifier string) (string, error)
 	Load(identifier string) ([]byte, string, error)
 }
 
@@ -25,37 +25,54 @@ func NewLoader(identifier string) (Loader, error) {
 // FileLoader reads bytes from regular files
 type FileLoader struct{}
 
-// Discover attempts to match the given identifier to the closest file match
-func (loader FileLoader) Discover(identifier string) string {
-	extension := path.Ext(identifier)
+func discoverExtensionForPath(path string) (string, error) {
+	for extension := range serializers {
+		fullPath := path + "." + extension
 
-	if extension == "" {
-		for key := range serializers {
-			extension = "." + key
-
-			if _, err := os.Stat(identifier + extension); os.IsNotExist(err) != true {
-				identifier += extension
-				break
+		if stat, err := os.Stat(fullPath); !os.IsNotExist(err) {
+			if stat.IsDir() {
+				continue
 			}
 
-			extension = ""
+			return fullPath, nil
 		}
 	}
 
-	if absolute, err := filepath.Abs(identifier); err == nil {
-		identifier = absolute
+	return "", fmt.Errorf("could not find any matching files in %v", path)
+}
+
+func discoverFileInPath(dir, identifier string) (string, error) {
+	fullPath := path.Join(dir, identifier)
+
+	if extension := filepath.Ext(fullPath); extension == "" {
+		return discoverExtensionForPath(fullPath)
+	} else if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("unable to find matching configuration in %v", dir)
 	}
 
-	return identifier
+	return fullPath, nil
+}
+
+// Discover attempts to match the given identifier to the closest file match
+func (loader FileLoader) Discover(identifier string) (string, error) {
+	var result string
+	var err error
+
+	for _, currentPath := range StandardPaths() {
+		if currentPath, err = discoverFileInPath(currentPath, identifier); err != nil {
+			continue
+		}
+
+		result = currentPath
+		break
+	}
+
+	return result, err
 }
 
 // Load loads a specific file from the filesystem
 func (loader FileLoader) Load(identifier string) ([]byte, string, error) {
 	var result []byte
-
-	if identifier == "" {
-		return nil, "", fmt.Errorf("unable to find matching file for the given identifier (%v)", identifier)
-	}
 
 	file, err := os.Open(identifier)
 	panicIfError(err)

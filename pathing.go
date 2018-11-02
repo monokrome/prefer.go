@@ -7,6 +7,7 @@ import (
 
 var standardPaths []string
 
+// StandardPaths provides base paths for searching for discoverying files
 func StandardPaths() []string {
 	paths := make([]string, len(standardPaths))
 	copy(paths, standardPaths)

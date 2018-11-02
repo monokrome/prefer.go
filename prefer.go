@@ -1,5 +1,7 @@
 package prefer
 
+import "fmt"
+
 type filterable func(identifier string) bool
 
 // Configuration represents a specific configuration loaded by Prefer
@@ -10,7 +12,7 @@ type Configuration struct {
 }
 
 // Load creates and loads a Configuration object
-func Load(identifier string, out interface{}) (*Configuration, error) {
+func Load(identifier string, options *interface{}, out interface{}) (*Configuration, error) {
 	configuration := &Configuration{}
 
 	loader, err := NewLoader(identifier)
@@ -20,7 +22,9 @@ func Load(identifier string, out interface{}) (*Configuration, error) {
 
 	// When inexact identifiers are provided, this updates identifier with a
 	// best-guess existing match for the given identifier
-	configuration.identifier = loader.Discover(identifier)
+	if configuration.identifier, err = loader.Discover(identifier); err != nil {
+		return nil, fmt.Errorf("can not find matching configuration for %v", identifier)
+	}
 
 	content, identifier, err := loader.Load(configuration.identifier)
 	if err != nil {
